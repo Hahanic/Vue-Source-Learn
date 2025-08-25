@@ -9,11 +9,11 @@
     "resolveJsonModule": true,
     "esModuleInterop": true,
     "jsx": "preserve",
-    "lib": ["esnext", "dom"]
-  },
-  "baseUrl": ".",
-  "paths": {
-    "@vue/*": ["packages/*/src"]
+    "lib": ["esnext", "dom"],
+    "baseUrl": ".",
+    "paths": {
+      "@vue/*": ["packages/*/src"]
+    }
   },
   "include": [
     "packages/**/*.ts",
