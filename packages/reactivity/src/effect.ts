@@ -12,7 +12,11 @@ export function effect(fn: Function, options?: Object) {
 
 export let activeEffect: ReactiveEffect | undefined;
 
-class ReactiveEffect {
+export class ReactiveEffect {
+  _trackId: number = 0; // 用于记录当前effect执行了几次
+  deps = [];
+  _depsLength: number = 0;
+
   public fn: Function;
   public scheduler: Function;
   public active = true;
@@ -35,6 +39,22 @@ class ReactiveEffect {
     } finally {
       // 确保响应式数据只有在effect被访问才能收集依赖
       activeEffect = lastEffect;
+    }
+  }
+}
+
+// 当前effect和收集器 双向记忆
+export function trackEffects(effect, dep) {
+  if (dep.has(effect)) return;
+  dep.set(effect, effect._trackId);
+  effect.deps[effect._depsLength++] = dep;
+}
+
+// 依次执行依赖
+export function triggerEffects(dep) {
+  for (const effect of dep.keys()) {
+    if (effect.scheduler) {
+      effect.scheduler();
     }
   }
 }

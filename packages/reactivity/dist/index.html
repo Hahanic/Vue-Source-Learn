@@ -28,6 +28,13 @@
       document.getElementById("app").innerText = `Hello, ${state.age}岁的${state.name}`;
     });
 
+    effect(() => {
+      document.getElementById("app").innerText = `Hello, ${state.age}岁`;
+    });
+
+    setInterval(() => {
+      state.age++;
+    }, 1000)
 
 
     </script>
