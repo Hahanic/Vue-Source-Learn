@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reactivity</title>
+</head>
+<body>
+  <div id="app">
+  </div>
+  <script type="module">
+    // import { reactive, effect } from "/node_modules/@vue/reactivity/dist/reactivity.esm-browser.js";
+    // reactive 让数据变成响应式
+    // const state = reactive({ age: '16' });
+    // effect 副作用 数据变化后让effect重新执行
+    // effect(() => {
+    //   document.getElementById("app").innerText = `Hello, ${state.age}`;
+    // });
+    // setInterval(() => {
+    //   state.age++;
+    // }, 1000);
+
+    import { reactive, effect } from "./index.js";
+
+    const state = reactive({ name: 'JAS', age: '16' });
+
+    effect(() => {
+      document.getElementById("app").innerText = `Hello, ${state.age}岁的${state.name}`;
+    });
+
+
+
+    </script>
+</body>
+</html>
