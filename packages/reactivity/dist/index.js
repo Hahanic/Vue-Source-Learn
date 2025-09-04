@@ -10,7 +10,7 @@ var activeEffect;
 var ReactiveEffect = class {
   constructor(fn, scheduler) {
     this._trackId = 0;
-    // 用于记录当前effect执行了几次
+    // 用于记录当前effect执行了几次，也能看出执行版本，防止一个属性重复收集
     this.deps = [];
     this._depsLength = 0;
     this.active = true;
@@ -22,16 +22,50 @@ var ReactiveEffect = class {
     let lastEffect = activeEffect;
     try {
       activeEffect = this;
+      preCleanEffect(this);
       return this.fn();
     } finally {
+      postCleanEffect(this);
       activeEffect = lastEffect;
     }
   }
 };
 function trackEffects(effect2, dep) {
-  if (dep.has(effect2)) return;
+  if (dep.get(effect2) === effect2._trackId) {
+    console.log("\u8DF3\u8FC7\u591A\u4F59\u7684\u6536\u96C6");
+    return;
+  }
   dep.set(effect2, effect2._trackId);
-  effect2.deps[effect2._depsLength++] = dep;
+  console.log("\u6536\u96C6\u4E00\u6B21");
+  let oldDep = effect2.deps[effect2._depsLength];
+  if (oldDep !== dep) {
+    if (oldDep) {
+      cleanDepEffect(oldDep, effect2);
+    }
+    effect2.deps[effect2._depsLength++] = dep;
+  } else {
+    effect2._depsLength++;
+  }
+}
+function cleanDepEffect(dep, effect2) {
+  dep.delete(effect2);
+  if (dep.size === 0) {
+    dep.cleanUp();
+  }
+  effect2.deps.splice(effect2._depsLength - 1, 1);
+}
+function preCleanEffect(effect2) {
+  effect2._depsLength = 0;
+  effect2._trackId++;
+}
+function postCleanEffect(effect2) {
+  if (effect2.deps.length > effect2._depsLength) {
+    for (let i = effect2._depsLength; i < effect2.deps.length; i++) {
+      const dep = effect2.deps[i];
+      cleanDepEffect(dep, effect2);
+    }
+    effect2.deps.length = effect2._depsLength;
+  }
 }
 function triggerEffects(dep) {
   for (const effect2 of dep.keys()) {
@@ -49,8 +83,6 @@ function isObject(value) {
 // packages/reactivity/src/reactiveEffect.ts
 var targetMap = /* @__PURE__ */ new WeakMap();
 function track(target, key) {
-  console.log(target, key);
-  console.log(activeEffect);
   if (activeEffect) {
     let depsMap = targetMap.get(target);
     if (!depsMap) {
@@ -59,11 +91,10 @@ function track(target, key) {
     }
     let dep = depsMap.get(key);
     if (!dep) {
-      dep = /* @__PURE__ */ new Map();
-      depsMap.set(key, dep = createDep(() => depsMap.delete(key), key));
+      dep = createDep(() => depsMap.delete(key), key);
+      depsMap.set(key, dep);
     }
     trackEffects(activeEffect, dep);
-    console.log(targetMap);
   }
 }
 var createDep = (cleanUp, key) => {

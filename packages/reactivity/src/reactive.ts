@@ -1,6 +1,7 @@
 import { isObject } from "@vue/shared";
 import { mutableHandlers, ReactiveFlags } from "./baseHandler";
 
+// 原始对象映射代理对象
 const reactiveMap = new WeakMap<object, any>();
 
 export function reactive(target: object) {
