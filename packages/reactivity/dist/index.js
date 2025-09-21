@@ -4,15 +4,22 @@ function effect(fn, options) {
     _effect.run();
   });
   _effect.run();
-  return _effect;
+  if (options) {
+    Object.assign(_effect, options);
+  }
+  const runner = _effect.run.bind(_effect);
+  runner.effect = _effect;
+  return runner;
 }
 var activeEffect;
 var ReactiveEffect = class {
   constructor(fn, scheduler) {
     this._trackId = 0;
     // 用于记录当前effect执行了几次，也能看出执行版本，防止一个属性重复收集
-    this.deps = [];
     this._depsLength = 0;
+    this._running = 0;
+    // 防止effect嵌套执行
+    this.deps = [];
     this.active = true;
     this.fn = fn;
     this.scheduler = scheduler;
@@ -23,20 +30,19 @@ var ReactiveEffect = class {
     try {
       activeEffect = this;
       preCleanEffect(this);
+      this._running++;
+      if (this._running > 1) return this.fn();
       return this.fn();
     } finally {
+      this._running--;
       postCleanEffect(this);
       activeEffect = lastEffect;
     }
   }
 };
 function trackEffects(effect2, dep) {
-  if (dep.get(effect2) === effect2._trackId) {
-    console.log("\u8DF3\u8FC7\u591A\u4F59\u7684\u6536\u96C6");
-    return;
-  }
+  if (dep.get(effect2) === effect2._trackId) return;
   dep.set(effect2, effect2._trackId);
-  console.log("\u6536\u96C6\u4E00\u6B21");
   let oldDep = effect2.deps[effect2._depsLength];
   if (oldDep !== dep) {
     if (oldDep) {
@@ -69,7 +75,7 @@ function postCleanEffect(effect2) {
 }
 function triggerEffects(dep) {
   for (const effect2 of dep.keys()) {
-    if (effect2.scheduler) {
+    if (effect2.scheduler && !effect2._running) {
       effect2.scheduler();
     }
   }
@@ -116,7 +122,11 @@ var mutableHandlers = {
   get(target, key, receiver) {
     if (key === "__v_isReactive" /* IS_REACTIVE */) return true;
     track(target, key);
-    return Reflect.get(target, key, receiver);
+    let res = Reflect.get(target, key, receiver);
+    if (isObject(res)) {
+      return reactive(res);
+    }
+    return res;
   },
   set(target, key, value, receiver) {
     let oldValue = target[key];

@@ -24,18 +24,17 @@
   <script type="module">
     import { reactive, effect } from "./index.js";
 
-    const state = reactive({ name: 'JAS', age: '16', height: '170' });
+    const state = reactive({ name: 'JAS', age: '16', height: 170, flag: true });
 
     effect(() => {
-      let name = state.name ? state.age : state.height;
-      document.getElementById("app").innerText = `Hello, ${name}`;
+      document.getElementById("app").innerText = `Hello, ${state.height}`;
+      // state.height = Math.floor(Math.random() * 10);
     });
-    effect(() => {
-      document.getElementById("app").innerText = `Hello, ${state.age}和${state.age}岁的${state.name}`;
-    });
+
 
     setInterval(() => {
-      state.age++;
+      // state.flag = !state.flag;
+      state.height++
     }, 1000)
     </script>
 </body>

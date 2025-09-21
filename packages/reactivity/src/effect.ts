@@ -9,15 +9,23 @@ export function effect(fn: Function, options?: Object) {
   // 默认首先执行一次
   _effect.run();
 
-  return _effect;
+  if (options) {
+    Object.assign(_effect, options);
+  }
+
+  const runner = _effect.run.bind(_effect);
+  runner.effect = _effect;
+
+  return runner;
 }
 
 export let activeEffect: ReactiveEffect | undefined;
 
 export class ReactiveEffect {
   _trackId: number = 0; // 用于记录当前effect执行了几次，也能看出执行版本，防止一个属性重复收集
-  deps: Dep[] = [];
   _depsLength: number = 0;
+  _running = 0; // 防止effect嵌套执行
+  deps: Dep[] = [];
 
   public fn: Function;
   public scheduler: Function;
@@ -37,12 +45,15 @@ export class ReactiveEffect {
       // 暴露到全局
       activeEffect = this;
 
-      // effect 进入时清理上次依赖
+      // 为依赖清理做准备
       preCleanEffect(this);
 
-      // 依赖收集
+      this._running++;
+      // 防止effect嵌套执行
+      if (this._running > 1) return this.fn();
       return this.fn();
     } finally {
+      this._running--;
       // 清理依赖
       postCleanEffect(this);
       // 确保响应式数据只有在effect被访问才能收集依赖
@@ -53,13 +64,9 @@ export class ReactiveEffect {
 
 // 当前effect和收集器 双向记忆
 export function trackEffects(effect: ReactiveEffect, dep: Dep) {
-  // 优化多余的收集
-  if (dep.get(effect) === effect._trackId) {
-    console.log("跳过多余的收集");
-    return;
-  }
+  // 防止同一个属性重复收集
+  if (dep.get(effect) === effect._trackId) return;
   dep.set(effect, effect._trackId);
-  console.log("收集一次");
 
   // 这里靠执行函数里代理对象的属性的访问顺序
   let oldDep = effect.deps[effect._depsLength];
@@ -104,7 +111,7 @@ function postCleanEffect(effect: ReactiveEffect) {
 // 依次执行依赖
 export function triggerEffects(dep: Dep) {
   for (const effect of dep.keys()) {
-    if (effect.scheduler) {
+    if (effect.scheduler && !effect._running) {
       effect.scheduler();
     }
   }

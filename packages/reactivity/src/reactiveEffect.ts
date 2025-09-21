@@ -35,7 +35,6 @@ export function track(target: object, key: string | symbol) {
       depsMap = new Map();
       targetMap.set(target, depsMap);
     }
-
     // 确保depsMap中有key的映射
     let dep: Dep | undefined = depsMap.get(key);
     if (!dep) {
