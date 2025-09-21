@@ -151,11 +151,55 @@ function createReactiveObject(target) {
   reactiveMap.set(target, proxy);
   return proxy;
 }
+function toReactive(val) {
+  return isObject(val) ? reactive(val) : val;
+}
+
+// packages/reactivity/src/ref.ts
+function ref(value) {
+  return createRef(value);
+}
+function createRef(value) {
+  return new RefImpl(value);
+}
+var RefImpl = class {
+  constructor(rawvalue) {
+    this.__v_isRef = true;
+    this.rawvalue = toReactive(rawvalue);
+    this._value = this.rawvalue;
+  }
+  get value() {
+    trackRefValue(this);
+    return this._value;
+  }
+  set value(newValue) {
+    if (newValue !== this.rawvalue) {
+      this.rawvalue = newValue;
+      this._value = newValue;
+      triggerRefValue(this);
+    }
+  }
+};
+function trackRefValue(ref2) {
+  if (activeEffect) {
+    trackEffects(
+      activeEffect,
+      ref2.dep || (ref2.dep = createDep(() => ref2.dep = void 0, "ref"))
+    );
+  }
+}
+function triggerRefValue(ref2) {
+  if (ref2.dep) {
+    triggerEffects(ref2.dep);
+  }
+}
 export {
   ReactiveEffect,
   activeEffect,
   effect,
   reactive,
+  ref,
+  toReactive,
   trackEffects,
   triggerEffects
 };

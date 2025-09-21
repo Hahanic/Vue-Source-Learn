@@ -4,7 +4,6 @@ import {
   triggerEffects,
   type ReactiveEffect,
 } from "./effect";
-
 /**
  * Dep 是一个特殊的 Map，它存储 ReactiveEffect 和其 trackId 的映射。
  * 同时，它还附加了用于清理自身的 cleanUp 方法和对应的 key。

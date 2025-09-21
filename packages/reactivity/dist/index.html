@@ -22,19 +22,19 @@
   <div id="app">
   </div>
   <script type="module">
-    import { reactive, effect } from "./index.js";
+    import { reactive, effect, ref } from "./index.js";
 
-    const state = reactive({ name: 'JAS', age: '16', height: 170, flag: true });
-
+    const state = reactive({ name: 'JAS', age: '16', height: 170 });
+    const flag = ref(true);
+    console.log(flag.value);
     effect(() => {
-      document.getElementById("app").innerText = `Hello, ${state.height}`;
-      // state.height = Math.floor(Math.random() * 10);
+      document.getElementById("app").innerText = `Hello, ${state.height}${flag.value}`;
     });
 
 
     setInterval(() => {
-      // state.flag = !state.flag;
-      state.height++
+      flag.value = !flag.value;
+      // state.height++;
     }, 1000)
     </script>
 </body>

@@ -24,3 +24,7 @@ function createReactiveObject(target: object) {
   reactiveMap.set(target, proxy);
   return proxy;
 }
+
+export function toReactive(val: any) {
+  return isObject(val) ? reactive(val) : val;
+}
