@@ -19,12 +19,21 @@ var ReactiveEffect = class {
     this._depsLength = 0;
     this._running = 0;
     // 防止effect嵌套执行
+    this._dirtyLevel = 4 /* Dirty */;
+    // 默认脏值
     this.deps = [];
     this.active = true;
     this.fn = fn;
     this.scheduler = scheduler;
   }
+  get dirty() {
+    return this._dirtyLevel === 4 /* Dirty */;
+  }
+  set dirty(val) {
+    this._dirtyLevel = val ? 4 /* Dirty */ : 0 /* NoDirty */;
+  }
   run() {
+    this._dirtyLevel = 0 /* NoDirty */;
     if (!this.active) return this.fn();
     let lastEffect = activeEffect;
     try {
@@ -75,6 +84,9 @@ function postCleanEffect(effect2) {
 }
 function triggerEffects(dep) {
   for (const effect2 of dep.keys()) {
+    if (effect2._dirtyLevel < 4 /* Dirty */) {
+      effect2._dirtyLevel = 4 /* Dirty */;
+    }
     if (effect2.scheduler && !effect2._running) {
       effect2.scheduler();
     }
@@ -84,6 +96,9 @@ function triggerEffects(dep) {
 // packages/shared/src/index.ts
 function isObject(value) {
   return value !== null && typeof value === "object" && !Array.isArray(value);
+}
+function isFunction(value) {
+  return typeof value === "function";
 }
 
 // packages/reactivity/src/reactiveEffect.ts
@@ -233,9 +248,49 @@ function proxyRefs(objectWithRefs) {
     }
   });
 }
+
+// packages/reactivity/src/computed.ts
+var ComputedRefImpl = class {
+  constructor(getter, setter) {
+    this.setter = setter;
+    this.effect = new ReactiveEffect(
+      () => getter(this._value),
+      () => {
+        triggerRefValue(this);
+      }
+    );
+  }
+  get value() {
+    if (this.effect.dirty) {
+      this._value = this.effect.run();
+      trackRefValue(this);
+    }
+    return this._value;
+  }
+  set value(newValue) {
+    this.setter(newValue);
+  }
+};
+function computed(getterOrOptions) {
+  let isGetter = isFunction(getterOrOptions);
+  let getter;
+  let setter;
+  if (isGetter) {
+    getter = getterOrOptions;
+    setter = () => {
+      console.warn("computed value is readonly");
+    };
+  } else {
+    getter = getterOrOptions.get;
+    setter = getterOrOptions.set;
+  }
+  return new ComputedRefImpl(getter, setter);
+}
 export {
+  ComputedRefImpl,
   ReactiveEffect,
   activeEffect,
+  computed,
   effect,
   proxyRefs,
   reactive,
@@ -244,6 +299,8 @@ export {
   toRef,
   toRefs,
   trackEffects,
-  triggerEffects
+  trackRefValue,
+  triggerEffects,
+  triggerRefValue
 };
 //# sourceMappingURL=index.js.map

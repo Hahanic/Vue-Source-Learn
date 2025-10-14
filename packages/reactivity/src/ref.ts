@@ -1,3 +1,4 @@
+import { ComputedRefImpl } from "./computed";
 import { activeEffect, trackEffects, triggerEffects } from "./effect";
 import { toReactive } from "./reactive";
 import { createDep } from "./reactiveEffect";
@@ -34,7 +35,8 @@ class RefImpl {
   }
 }
 
-function trackRefValue(ref: RefImpl) {
+// 将 ref 的 value 属性和 effect 进行关联
+export function trackRefValue(ref: RefImpl | ComputedRefImpl) {
   if (activeEffect) {
     trackEffects(
       activeEffect,
@@ -43,7 +45,8 @@ function trackRefValue(ref: RefImpl) {
   }
 }
 
-function triggerRefValue(ref: RefImpl) {
+// 触发 ref 的 value 属性对应的 effect 执行
+export function triggerRefValue(ref: RefImpl | ComputedRefImpl) {
   if (ref.dep) {
     triggerEffects(ref.dep);
   }

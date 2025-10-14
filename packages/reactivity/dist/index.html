@@ -22,20 +22,28 @@
   <div id="app">
   </div>
   <script type="module">
-    import { reactive, effect, ref } from "./index.js";
+    import { reactive, effect, ref, computed } from "./index.js";
 
-    const state = reactive({ info: { firstName: 'JAS', lastName: 'ttenet',age: '16', },  height: 170 });
+    const state = reactive({ info: { firstName: 'JAS', lastName: 'ttenet', age: '16', },  height: 170 });
     const flag = ref(true);
 
-    effect(() => {
-      document.getElementById("app").innerText = `Hello, ${state.info.firstName}${state.info.lastName}, ${state.info.age}, ${flag.value}`;
+    const fullName = computed({
+      get(oldvalue) {
+        return state.height;
+        // return `${state.info.firstName} ${state.info.lastName}`;
+      },
+      set(newvalue) {
+        console.log('set', newvalue);
+      }
     });
 
+    effect(() => {
+      // document.getElementById("app").innerText = `Hello, ${state.info.firstName}${state.info.lastName}, ${state.info.age}, ${flag.value}`;
+      console.log(fullName.value);
+    });
+    state.height = 180;
+    // state.info.firstName = '梦';
 
-    setInterval(() => {
-      flag.value = !flag.value;
-      state.info.age++;
-    }, 1000)
     </script>
 </body>
 </html>

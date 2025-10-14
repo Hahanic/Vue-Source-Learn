@@ -1,3 +1,4 @@
+import { DirtyLevels } from "./constants";
 import { Dep } from "./reactiveEffect";
 
 export function effect(fn: Function, options?: Object) {
@@ -25,6 +26,7 @@ export class ReactiveEffect {
   _trackId: number = 0; // 用于记录当前effect执行了几次，也能看出执行版本，防止一个属性重复收集
   _depsLength: number = 0;
   _running = 0; // 防止effect嵌套执行
+  _dirtyLevel = DirtyLevels.Dirty; // 默认脏值
   deps: Dep[] = [];
 
   public fn: Function;
@@ -36,7 +38,17 @@ export class ReactiveEffect {
     this.scheduler = scheduler;
   }
 
+  public get dirty() {
+    return this._dirtyLevel === DirtyLevels.Dirty;
+  }
+
+  public set dirty(val: boolean) {
+    this._dirtyLevel = val ? DirtyLevels.Dirty : DirtyLevels.NoDirty;
+  }
+
   run() {
+    // 每次执行前先把脏值重置
+    this._dirtyLevel = DirtyLevels.NoDirty;
     // 非激活则执行后什么都不用做
     if (!this.active) return this.fn();
 
@@ -111,6 +123,10 @@ function postCleanEffect(effect: ReactiveEffect) {
 // 依次执行依赖
 export function triggerEffects(dep: Dep) {
   for (const effect of dep.keys()) {
+    if (effect._dirtyLevel < DirtyLevels.Dirty) {
+      effect._dirtyLevel = DirtyLevels.Dirty;
+    }
+
     if (effect.scheduler && !effect._running) {
       effect.scheduler();
     }
