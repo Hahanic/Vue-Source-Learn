@@ -24,17 +24,17 @@
   <script type="module">
     import { reactive, effect, ref } from "./index.js";
 
-    const state = reactive({ name: 'JAS', age: '16', height: 170 });
+    const state = reactive({ info: { firstName: 'JAS', lastName: 'ttenet',age: '16', },  height: 170 });
     const flag = ref(true);
-    console.log(flag.value);
+
     effect(() => {
-      document.getElementById("app").innerText = `Hello, ${state.height}${flag.value}`;
+      document.getElementById("app").innerText = `Hello, ${state.info.firstName}${state.info.lastName}, ${state.info.age}, ${flag.value}`;
     });
 
 
     setInterval(() => {
       flag.value = !flag.value;
-      // state.height++;
+      state.info.age++;
     }, 1000)
     </script>
 </body>
