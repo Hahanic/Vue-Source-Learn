@@ -32,6 +32,16 @@ var ReactiveEffect = class {
   set dirty(val) {
     this._dirtyLevel = val ? 4 /* Dirty */ : 0 /* NoDirty */;
   }
+  stop() {
+    if (this.active) {
+      for (let i = 0; i < this.deps.length; i++) {
+        const dep = this.deps[i];
+        cleanDepEffect(dep, this);
+      }
+      this.deps.length = 0;
+      this.active = false;
+    }
+  }
   run() {
     this._dirtyLevel = 0 /* NoDirty */;
     if (!this.active) return this.fn();
@@ -169,6 +179,9 @@ function createReactiveObject(target) {
 function toReactive(val) {
   return isObject(val) ? reactive(val) : val;
 }
+function isReactive(val) {
+  return !!(val && val["__v_isReactive" /* IS_REACTIVE */]);
+}
 
 // packages/reactivity/src/ref.ts
 function ref(value) {
@@ -248,6 +261,9 @@ function proxyRefs(objectWithRefs) {
     }
   });
 }
+function isRef(r) {
+  return !!(r && r.__v_isRef === true);
+}
 
 // packages/reactivity/src/computed.ts
 var ComputedRefImpl = class {
@@ -292,6 +308,8 @@ export {
   activeEffect,
   computed,
   effect,
+  isReactive,
+  isRef,
   proxyRefs,
   reactive,
   ref,

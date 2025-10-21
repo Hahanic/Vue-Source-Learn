@@ -46,6 +46,18 @@ export class ReactiveEffect {
     this._dirtyLevel = val ? DirtyLevels.Dirty : DirtyLevels.NoDirty;
   }
 
+  stop() {
+    if (this.active) {
+      // 清理依赖
+      for (let i = 0; i < this.deps.length; i++) {
+        const dep = this.deps[i];
+        cleanDepEffect(dep, this);
+      }
+      this.deps.length = 0;
+      this.active = false;
+    }
+  }
+
   run() {
     // 每次执行前先把脏值重置
     this._dirtyLevel = DirtyLevels.NoDirty;

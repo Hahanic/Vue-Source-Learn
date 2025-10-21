@@ -93,3 +93,7 @@ export function proxyRefs(objectWithRefs: any) {
     },
   });
 }
+
+export function isRef(r: any): r is RefImpl {
+  return !!(r && r.__v_isRef === true);
+}

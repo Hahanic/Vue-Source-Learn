@@ -29,3 +29,7 @@ function createReactiveObject(target: object) {
 export function toReactive(val: any) {
   return isObject(val) ? reactive(val) : val;
 }
+
+export function isReactive(val: any): boolean {
+  return !!(val && val[ReactiveFlags.IS_REACTIVE]);
+}
