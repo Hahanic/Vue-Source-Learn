@@ -28,7 +28,7 @@ const outDir = resolve(__dirname, "../packages", target, "dist");
 // 开始打包
 esbuild.context({
   entryPoints: [entry], // 入口
-  outfile: resolve(__dirname, `../packages/${target}/dist/index.js`), // 出口
+  outfile: resolve(__dirname, `../packages/${target}/dist/${target}.js`), // 出口
   bundle: true, // 打包一起
   platform: 'browser',
   sourcemap: true, // 可调试源码
