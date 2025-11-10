@@ -12,7 +12,7 @@
     "lib": ["esnext", "dom"],
     "baseUrl": ".",
     "paths": {
-      "@vue/*": ["packages/*/src"]
+      "@momo-vue/*": ["packages/*/src"]
     }
   },
   "include": [
@@ -21,8 +21,5 @@
     "packages/**/*.tsx",
     "packages/**/*.vue"
   ],
-  "exclude": [
-    "node_modules",
-    "dist"
-  ]
+  "exclude": ["node_modules", "dist"]
 }

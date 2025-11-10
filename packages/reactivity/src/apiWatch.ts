@@ -1,4 +1,4 @@
-import { isObject } from "@vue/shared";
+import { isObject } from "@momo-vue/shared";
 import { ReactiveEffect } from "./effect";
 import { isReactive } from "./reactive";
 import { isRef } from "./ref";

@@ -1,5 +1,4 @@
-import { isObject } from "@vue/shared";
-import { activeEffect } from "./effect";
+import { isObject } from "@momo-vue/shared";
 import { track, trigger } from "./reactiveEffect";
 import { reactive } from "./reactive";
 import { ReactiveFlags } from "./constants";

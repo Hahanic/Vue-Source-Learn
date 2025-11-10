@@ -1,4 +1,4 @@
-import { isFunction } from "@vue/shared";
+import { isFunction } from "@momo-vue/shared";
 import { ReactiveEffect } from "./effect";
 import { trackRefValue, triggerRefValue } from "./ref";
 import { Dep } from "./reactiveEffect";

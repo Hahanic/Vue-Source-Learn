@@ -24,7 +24,25 @@ importers:
 
   packages/reactivity:
     dependencies:
-      '@vue/shared':
+      '@momo-vue/shared':
+        specifier: workspace:*
+        version: link:../shared
+
+  packages/runtime-core:
+    dependencies:
+      '@momo-vue/reactivity':
+        specifier: workspace:*
+        version: link:../reactivity
+      '@momo-vue/shared':
+        specifier: workspace:*
+        version: link:../shared
+
+  packages/runtime-dom:
+    dependencies:
+      '@momo-vue/runtime-core':
+        specifier: workspace:*
+        version: link:../runtime-core
+      '@momo-vue/shared':
         specifier: workspace:*
         version: link:../shared
 
